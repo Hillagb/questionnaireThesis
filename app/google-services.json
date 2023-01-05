@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "159069070867",
+    "project_id": "questionnairethesis-8ee25",
+    "storage_bucket": "questionnairethesis-8ee25.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:159069070867:android:6c839a28158a9ee0f381e6",
+        "android_client_info": {
+          "package_name": "com.example.questionnairethesis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "159069070867-rpqn0sh345quchrhsupbdkbhsa8vff72.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBgegoCCK3q1J9z7yj7anPZfsJfrxnhlo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "159069070867-rpqn0sh345quchrhsupbdkbhsa8vff72.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
