@@ -3,6 +3,7 @@ package com.example.questionnairethesis;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -16,26 +17,43 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class QuestionActivity extends AppCompatActivity implements MediaPlayer.OnPreparedListener{
     TextView tvTitle;
     Button[] buttons;
     MediaPlayer player;
     ImageButton ibAudio;
+    String s;
     private ArrayList<StorageReference> segments;
-
+    private FirebaseFirestore db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question);
+        db=FirebaseFirestore.getInstance();
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
+        StorageReference listRef=storage.getReference();
+        listRef.listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
+            @Override
+            public void onSuccess(ListResult listResult) {
+                Log.d("Speeches", listRef.getName());
+                for (StorageReference prefix: listResult.getPrefixes()){
+                    Log.d("One Speech", prefix.getName());
+                }
+            }
+        });
         int num= (int) (Math.random()*324);
         tvTitle=findViewById(R.id.tvTitle);
 
@@ -45,9 +63,9 @@ public class QuestionActivity extends AppCompatActivity implements MediaPlayer.O
             public void onClick(View view) {
                 player = new MediaPlayer();
 
-                String s="/gamliel"+num+".wav";
+                s="/gamliel"+num+".wav";
 
-                Log.d("All Files", String.valueOf(storageRef.child("/").listAll()));
+
                 storageRef.child(s).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
@@ -87,11 +105,21 @@ public class QuestionActivity extends AppCompatActivity implements MediaPlayer.O
             currentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    CollectionReference tags=db.collection("tags");
+                    Segment segment=new Segment(s,currentButton.getText().toString());
+                    tags.add(segment).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Intent intent=new Intent(QuestionActivity.this, QuestionActivity.class);
+                            startActivity(intent);
+                        }
+                    });
                 }
             });
         }
     }
+
+
 
 
     @Override
