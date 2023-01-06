@@ -30,13 +30,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 
-public class QuestionActivity extends AppCompatActivity implements MediaPlayer.OnPreparedListener{
+public class QuestionActivity extends AppCompatActivity{
     TextView tvTitle;
     Button[] buttons;
     MediaPlayer player;
     ImageButton ibAudio;
     int filesCounter;
-    String s;
+    String segmentName;
     ArrayList<String>Uris;
     private ArrayList<StorageReference> segments;
     private FirebaseFirestore db;
@@ -46,62 +46,51 @@ public class QuestionActivity extends AppCompatActivity implements MediaPlayer.O
         setContentView(R.layout.activity_question);
         db=FirebaseFirestore.getInstance();
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference();
         StorageReference listRef=storage.getReference();
         Uris=new ArrayList<>();
-        int num= (int) (Math.random()*324);
         tvTitle=findViewById(R.id.tvTitle);
-
         ibAudio=findViewById(R.id.ibAudio);
         ibAudio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 player = new MediaPlayer();
-
-                s="/gamliel"+num+".wav";
-
                 listRef.listAll().addOnSuccessListener(new OnSuccessListener<ListResult>() {
                             @Override
                             public void onSuccess(ListResult listResult) {
                                 filesCounter=0;
                                 for (StorageReference item : listResult.getItems()) {
-                                    String temp="https://firebasestorage.googleapis.com/v0/b/questionnairethesis-8ee25.appspot.com/o/gamliel282.wav?alt=media&token=e9cb059b-4eea-4af6-b8f0-16de3afd59a8";
-                                    String tempName=item.toString().substring(item.toString().lastIndexOf("/")+1);
-                                    Log.d("Temp random name",tempName);
-                                    temp=temp.replace("gamliel282.wav",tempName);
-                                    Log.d("Temp random",temp);
+                                    String temp="https://firebasestorage.googleapis.com/v0/b/questionnairethesis-8ee25.appspot.com/o/ExampleForSegmentName.wav?alt=media&token=e9cb059b-4eea-4af6-b8f0-16de3afd59a8";
+                                    segmentName=item.toString().substring(item.toString().lastIndexOf("/")+1,item.toString().lastIndexOf("."));
+                                    temp=temp.replace("ExampleForSegmentName",segmentName);
                                     if (temp!=null)
                                         Uris.add(temp);
                                     filesCounter++;
                                 }
                                 Random random=new Random();
                                 int randIndex=random.nextInt(filesCounter);
-                                Log.d("random number", String.valueOf(randIndex));
-                                int tempCounter=0;
-                                    if (tempCounter==randIndex){
-                                        try {
-                                            Log.d("random item ",Uris.get(randIndex));
-                                            player.setDataSource(Uris.get(randIndex));
-                                            //player.setDataSource("https://firebasestorage.googleapis.com/v0/b/questionnairethesis-8ee25.appspot.com/o/shashabiton8.wav?alt=media&token=e9cb059b-4eea-4af6-b8f0-16de3afd59a8");
-                                            player.prepare();
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                        try {
-                                            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                                @Override
-                                                public void onPrepared(MediaPlayer mp) {
-                                                    player.start();
-                                                }
-                                            });
+                                    try {
+                                        String currURI=Uris.get(randIndex);
+                                        segmentName=currURI.substring(0,currURI.lastIndexOf(".wav"));
+                                        segmentName=segmentName.substring(segmentName.lastIndexOf("/")+1);
+                                        Log.d("segmentName",segmentName);
+                                        player.setDataSource(currURI);
+                                        player.prepare();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    try {
+                                        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                            @Override
+                                            public void onPrepared(MediaPlayer mp) {
+                                                player.start();
+                                            }
+                                        });
 
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
 
                             }
-
                         })
                         .addOnFailureListener(new OnFailureListener() {
                             @Override
@@ -109,35 +98,6 @@ public class QuestionActivity extends AppCompatActivity implements MediaPlayer.O
                                 // Uh-oh, an error occurred!
                             }
                         });
-                storageRef.child(s).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        try {
-                            player.setDataSource(uri.toString());
-                            Log.d("not random ",uri.toString());
-                            player.prepare();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        try {
-                            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                @Override
-                                public void onPrepared(MediaPlayer mp) {
-                                    player.start();
-                                }
-                            });
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        tvTitle.setText("Failure");
-                    }
-                });
-
             }
         });
         buttons=new Button[3];
@@ -150,7 +110,7 @@ public class QuestionActivity extends AppCompatActivity implements MediaPlayer.O
                 @Override
                 public void onClick(View view) {
                     CollectionReference tags=db.collection("tags");
-                    Segment segment=new Segment(s,currentButton.getText().toString());
+                    Segment segment=new Segment(segmentName,currentButton.getText().toString());
                     tags.add(segment).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
@@ -163,11 +123,4 @@ public class QuestionActivity extends AppCompatActivity implements MediaPlayer.O
         }
     }
 
-
-
-
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        mp.start();
-    }
 }
